@@ -5,9 +5,6 @@ from langchain_core.chat_history import (
     InMemoryChatMessageHistory,
 )
 from langchain_core.runnables.history import RunnableWithMessageHistory
-from langchain_community.document_loaders.csv_loader import CSVLoader
-from langchain_openai import OpenAIEmbeddings
-from langchain.vectorstores.chroma import Chroma
 from flask import Flask, request
 from opentelemetry.instrumentation.langchain import LangchainInstrumentor
 from opentelemetry import trace
@@ -16,29 +13,6 @@ from opentelemetry.trace import Status, StatusCode
 app = Flask(__name__)
 LangchainInstrumentor().instrument()
 model = ChatOpenAI(model="gpt-3.5-turbo")
-
-file_path = (
-    "./customers-1000.csv"
-)
-
-loader = CSVLoader(file_path=file_path)
-customer_data = loader.load()
-
-embeddings_model = OpenAIEmbeddings()
-
-db = Chroma.from_documents(
-    customer_data,
-    embedding=embeddings_model,
-    persist_directory="my_embeddings"
-)
-
-results = db.similarity_search(
-    "Which customers are associated with the company Cherry and Sons?"
-)
-
-for result in results:
-    print("\n")
-    print(result.page_content)
 
 store = {}
 config = {"configurable": {"session_id": "test"}}

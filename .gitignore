@@ -1,3 +1,4 @@
 openai-env/
 .idea/
 __pycache__/
+my_embeddings/
