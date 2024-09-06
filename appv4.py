@@ -1,4 +1,4 @@
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.chat_history import (
     BaseChatMessageHistory,
@@ -12,7 +12,7 @@ from opentelemetry.instrumentation.langchain import LangchainInstrumentor
 
 app = Flask(__name__)
 LangchainInstrumentor().instrument()
-model = ChatGoogleGenerativeAI(model="gemini-1.5-pro-latest")
+model = ChatOpenAI(model="gpt-3.5-turbo")
 
 embeddings_model = OpenAIEmbeddings()
 
