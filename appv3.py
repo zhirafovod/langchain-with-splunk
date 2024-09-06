@@ -7,8 +7,6 @@ from langchain_core.chat_history import (
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from flask import Flask, request
 from opentelemetry.instrumentation.langchain import LangchainInstrumentor
-from opentelemetry import trace
-from opentelemetry.trace import Status, StatusCode
 
 app = Flask(__name__)
 LangchainInstrumentor().instrument()
@@ -27,24 +25,16 @@ with_message_history = RunnableWithMessageHistory(model, get_session_history)
 @app.route("/askquestion", methods=['POST'])
 def ask_question():
 
-    current_span = trace.get_current_span()  # <-- get a reference to the current span
+    data = request.json
+    question = data.get('question')
 
-    try:
+    response = with_message_history.invoke(
+        [
+            SystemMessage(content="You are a helpful assistant"),
+            HumanMessage(content=question)
+        ],
+        config=config
+    )
 
-        data = request.json
-        question = data.get('question')
-
-        response = with_message_history.invoke(
-            [
-                SystemMessage(content="You are a helpful assistant"),
-                HumanMessage(content=question)
-            ],
-            config=config
-        )
-
-        return response.content
-
-    except Exception as ex:
-        current_span.set_status(Status(StatusCode.ERROR))
-        current_span.record_exception(ex)
+    return response.content
 

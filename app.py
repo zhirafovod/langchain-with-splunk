@@ -5,40 +5,23 @@ from langchain_core.chat_history import (
     InMemoryChatMessageHistory,
 )
 from langchain_core.runnables.history import RunnableWithMessageHistory
-from langchain_community.document_loaders.csv_loader import CSVLoader
 from langchain_openai import OpenAIEmbeddings
 from langchain.vectorstores.chroma import Chroma
+from langchain.chains import RetrievalQA
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from flask import Flask, request
 from opentelemetry.instrumentation.langchain import LangchainInstrumentor
-from opentelemetry import trace
-from opentelemetry.trace import Status, StatusCode
 
 app = Flask(__name__)
 LangchainInstrumentor().instrument()
 model = ChatOpenAI(model="gpt-3.5-turbo")
 
-file_path = (
-    "./customers-1000.csv"
-)
-
-loader = CSVLoader(file_path=file_path)
-customer_data = loader.load()
-
 embeddings_model = OpenAIEmbeddings()
 
-db = Chroma.from_documents(
-    customer_data,
-    embedding=embeddings_model,
-    persist_directory="my_embeddings"
+db = Chroma(
+    persist_directory="my_embeddings",
+    embedding_function=embeddings_model
 )
-
-results = db.similarity_search(
-    "Which customers are associated with the company Cherry and Sons?"
-)
-
-for result in results:
-    print("\n")
-    print(result.page_content)
 
 store = {}
 config = {"configurable": {"session_id": "test"}}
@@ -53,24 +36,23 @@ with_message_history = RunnableWithMessageHistory(model, get_session_history)
 @app.route("/askquestion", methods=['POST'])
 def ask_question():
 
-    current_span = trace.get_current_span()  # <-- get a reference to the current span
+    data = request.json
+    question = data.get('question')
 
-    try:
+    # find the documents most similar to the question that we can pass as context
+    context = db.similarity_search(question)
 
-        data = request.json
-        question = data.get('question')
+    response = with_message_history.invoke(
+        [
+            SystemMessage(
+                content=f'Use the following pieces of context to answer the question: {context}'
+            ),
+            HumanMessage(
+                content=question
+            )
+        ],
+        config=config
+    )
 
-        response = with_message_history.invoke(
-            [
-                SystemMessage(content="You are a helpful assistant"),
-                HumanMessage(content=question)
-            ],
-            config=config
-        )
-
-        return response.content
-
-    except Exception as ex:
-        current_span.set_status(Status(StatusCode.ERROR))
-        current_span.record_exception(ex)
+    return response.content
 
