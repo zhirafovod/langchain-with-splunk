@@ -7,6 +7,7 @@ from earlier questions.
 
 * Python 3.9+
 * [Splunk Distribution of the OpenTelemetry Collector](https://docs.splunk.com/observability/en/gdi/opentelemetry/opentelemetry.html#otel-intro-install) 
+* An OpenAI account (set via the `OPENAI_API_KEY` environment variable) that has access to utilize the API
 
 ## Run the Application
 

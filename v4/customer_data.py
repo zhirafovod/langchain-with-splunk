@@ -14,7 +14,7 @@ embeddings_model = OpenAIEmbeddings()
 db = Chroma.from_documents(
    customer_data,
    embedding=embeddings_model,
-   persist_directory="my_embeddings"
+   persist_directory="../my_embeddings"
 )
 
 results = db.similarity_search(
