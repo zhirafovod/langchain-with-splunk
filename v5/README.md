@@ -8,6 +8,7 @@ to switch providers when using LangChain, and that we get similar results.
 * Python 3.9+
 * [Splunk Distribution of the OpenTelemetry Collector](https://docs.splunk.com/observability/en/gdi/opentelemetry/opentelemetry.html#otel-intro-install) 
 * A Google Cloud account (set via the `GOOGLE_API_KEY` environment variable) that has access to utilize Gemini
+* Chroma DB has been populated by running the steps listed in [v4](../v4)
 
 ## Run the Application
 
@@ -32,12 +33,6 @@ pip3 install -r ./requirements.txt
 # define the service name and environment
 export OTEL_SERVICE_NAME=my-llm-app
 export OTEL_RESOURCE_ATTRIBUTES='deployment.environment=test'
-
-# load the customer data into Chroma DB 
-# Note:  Running the customer_data.py program multiple times will result in 
-# duplicate embeddings stored in the vector database. If needed, you can 
-# delete the my_embeddings folder and run this program once to start fresh.
-python3 customer_data.py
 
 # now we can run the application that uses embeddings to answer questions 
 splunk-py-trace flask run -p 8080
