@@ -1,0 +1,72 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-llm-app
+  labels:
+    helm.sh/chart: demo-llm-app-0.1.0
+    app.kubernetes.io/name: demo-llm-app
+    app.kubernetes.io/instance: demo-llm-app
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: "Helm"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: demo-llm-app
+      app.kubernetes.io/instance: demo-llm-app
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: demo-llm-app
+        app.kubernetes.io/instance: demo-llm-app
+    spec:
+      containers:
+        - name: demo-llm-app
+          image: "demo-llm-app:latest"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: OTEL_SERVICE_NAME
+              value: "demo-llm-app"
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: "deployment.environment=test"
+            - name: SPLUNK_OTEL_AGENT
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://$(SPLUNK_OTEL_AGENT):4317"
+            - name: REDIS_URL
+              value: "redis://redis.default.svc.cluster.local:6379"
+            - name: OTEL_EXPORTER_OTLP_HTTP_ENDPOINT
+              value: "http://$(SPLUNK_OTEL_AGENT):4318"
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: openai-secret
+                  key: api_key
+          resources: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-llm-app
+  labels:
+    helm.sh/chart: demo-llm-app-0.1.0
+    app.kubernetes.io/name: demo-llm-app
+    app.kubernetes.io/instance: demo-llm-app
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: "Helm"
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: demo-llm-app
+    app.kubernetes.io/instance: demo-llm-app
