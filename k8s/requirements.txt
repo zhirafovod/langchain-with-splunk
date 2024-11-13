@@ -1,0 +1,16 @@
+chromadb
+Flask
+langchain
+langchain-community
+langchain-core
+langchain-openai
+langchain-redis
+openlit
+opentelemetry-instrumentation
+opentelemetry-instrumentation-asgi
+opentelemetry-instrumentation-fastapi
+opentelemetry-instrumentation-langchain
+opentelemetry-instrumentation-system-metrics
+redis
+redisvl
+splunk-opentelemetry
