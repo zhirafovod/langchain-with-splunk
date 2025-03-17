@@ -1,0 +1,16 @@
+# Core dependencies for Flask API
+flask
+requests
+
+# LangChain and related libraries
+langchain
+langchain-openai
+langchain-chroma
+langchain-community
+
+# OpenTelemetry instrumentation for LangChain
+#opentelemetry-distro
+splunk-opentelemetry[all]
+opentelemetry-instrumentation-langchain
+
+
