@@ -13,4 +13,4 @@ langchain-community
 splunk-opentelemetry[all]
 opentelemetry-instrumentation-langchain
 
-
+bs4
